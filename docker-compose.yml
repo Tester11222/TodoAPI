@@ -1,0 +1,31 @@
+services:
+  # springappコンテナ
+  java:
+    # コンテナ名
+    container_name: spring
+    build: 
+      # 直下にアプリリソースがあるのを指定
+      context: .
+      dockerfile: Dockerfile
+    ports:
+     - "8080:8080"
+    depends_on:
+      - db
+  # postgresコンテナ
+  db:
+    image: postgres:15
+    container_name: postgres
+    ports:
+      - 5432:5432
+    volumes:
+      - db-store:/var/lib/postgresql/data
+      # これを記入することで、ymlファイルと同じ場所にできたディレクトリ内のSQLが初期化で読み込まれる
+      # SQLの変更をあとから加えたら docker-compose down --volume 
+      # でボリュームを削除しないとコンテナに反映されない
+      - ./initDBs:/docker-entrypoint-initdb.d 
+  
+    environment:
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+volumes:
+  db-store:
